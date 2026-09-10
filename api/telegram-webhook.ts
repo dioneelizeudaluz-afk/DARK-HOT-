@@ -22,16 +22,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (callback_query) {
       const chatId = callback_query.message.chat.id;
       const data = callback_query.data;
-
       let responseText = 'Opção selecionada.';
 
       if (supabase) {
         if (data === 'vip') {
-          const { data: msg } = await supabase.from('messages').select('text').eq('name', 'Oferta').single();
-          responseText = msg?.text || 'Área VIP. Conteúdo exclusivo em breve.';
+          const { data: msg } = await supabase.from('messages').select('text').eq('name', 'Oferta').maybeSingle();
+          responseText = msg?.text || 'Área VIP.';
         } else if (data === 'suporte') {
-          const { data: msg } = await supabase.from('messages').select('text').eq('name', 'Suporte').single();
-          responseText = msg?.text || 'Suporte DARK HOT. Como posso ajudar?';
+          const { data: msg } = await supabase.from('messages').select('text').eq('name', 'Suporte').maybeSingle();
+          responseText = msg?.text || 'Suporte DARK HOT.';
         }
       }
 
@@ -55,21 +54,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const userId = message.from?.id;
 
     if (supabase && userId) {
-      await supabase.from('bot_users').upsert({
-        telegram_id: userId,
-        username: username,
-        first_name: firstName,
-        last_activity: new Date().toISOString(),
-      }, { onConflict: 'telegram_id' });
-
-      const { data: existingLead } = await supabase.from('leads').select('id').eq('telegram_id', userId).maybeSingle();
-      if (!existingLead) {
-        await supabase.from('leads').insert({
+      try {
+        await supabase.from('bot_users').upsert({
           telegram_id: userId,
-          name: firstName,
           username: username,
-          status: 'novo',
-        });
+          first_name: firstName,
+          last_activity: new Date().toISOString(),
+        }, { onConflict: 'telegram_id' });
+
+        const { data: existingLead } = await supabase.from('leads').select('id').eq('telegram_id', userId).maybeSingle();
+        if (!existingLead) {
+          await supabase.from('leads').insert({
+            telegram_id: userId,
+            name: firstName,
+            username: username,
+            status: 'novo',
+          });
+        }
+      } catch (e) {
+        console.error('Erro Supabase:', e);
       }
     }
 
@@ -78,7 +81,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (text === '/start') {
       if (supabase) {
-        const { data: msg } = await supabase.from('messages').select('text').eq('name', 'Boas-vindas').eq('active', true).maybeSingle();
+        const { data: msg } = await supabase.from('messages').select('text').eq('name', 'Boas-vindas').maybeSingle();
         responseText = msg?.text || 'Bem-vindo ao DARK HOT!';
       } else {
         responseText = 'Bem-vindo ao DARK HOT!';
@@ -91,15 +94,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       };
     } else if (text === '/vip') {
       if (supabase) {
-        const { data: msg } = await supabase.from('messages').select('text').eq('name', 'Oferta').eq('active', true).maybeSingle();
-        responseText = msg?.text || 'Área VIP. Conteúdo exclusivo em breve.';
+        const { data: msg } = await supabase.from('messages').select('text').eq('name', 'Oferta').maybeSingle();
+        responseText = msg?.text || 'Área VIP em breve.';
       } else {
         responseText = 'Área VIP em breve.';
       }
     } else if (text === '/suporte') {
       if (supabase) {
-        const { data: msg } = await supabase.from('messages').select('text').eq('name', 'Suporte').eq('active', true).maybeSingle();
-        responseText = msg?.text || 'Suporte DARK HOT. Como posso ajudar?';
+        const { data: msg } = await supabase.from('messages').select('text').eq('name', 'Suporte').maybeSingle();
+        responseText = msg?.text || 'Suporte DARK HOT.';
       } else {
         responseText = 'Suporte DARK HOT.';
       }
