@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, MessageSquare, Users, ShoppingCart, Wallet, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, GitBranch, Users, ShoppingCart, Wallet, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 export default function Sidebar() {
@@ -9,7 +9,7 @@ export default function Sidebar() {
 
   const items = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/messages', label: 'Mensagens', icon: MessageSquare },
+    { path: '/flow', label: 'Fluxo', icon: GitBranch },
     { path: '/leads', label: 'Leads', icon: Users },
     { path: '/sales', label: 'Vendas', icon: ShoppingCart },
     { path: '/cashout', label: 'Cashout', icon: Wallet },
@@ -45,10 +45,6 @@ export default function Sidebar() {
             <LogOut size={18} />
             <span>Sair</span>
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px' }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00ff88' }}></span>
-            <span style={{ fontSize: 11, color: '#666' }}>Sistema online</span>
-          </div>
         </div>
       </aside>
 
